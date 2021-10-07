@@ -18,7 +18,7 @@ namespace Web
             Console.WriteLine("Бот запущен!");
             bot.OnMessage += MessageListener;
             bot.StartReceiving();
-            //bot.SendTextMessageAsync(-536570900, $"Так как произошли изменения в сайте, бот работает неправильно. ");
+            
             SendAlert();
             Console.ReadLine();
         }
