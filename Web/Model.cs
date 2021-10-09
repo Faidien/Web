@@ -3,9 +3,7 @@ using System.Linq;
 
 namespace Web
 {
-    internal class Model
-    {
-    }
+
     struct WeekSchedule
     {
         static MainLesson[] ml;
@@ -74,7 +72,6 @@ namespace Web
         public string[] Place { get; set; }
         public string[] Subject { get; set; }
         public string[] Teacher { get; set; }
-        MainLesson mainLes;
         public void Print()
         {
             Console.WriteLine($"Группа: {Group}");
@@ -86,11 +83,12 @@ namespace Web
         }
         public string GetStringToSend()
         {
+
             int intDay = 0;
             string body = "";
             int minPairs = 1;// с какой пары приходить, с какой пары начинается изменения
             DateTime now = DateTime.Now;
-            MainLesson ml;
+            MainLesson ml = new MainLesson();
             DateTime minTime = new DateTime(now.Year, now.Month, now.Day, 17, 0, 0);
 
             string head = $"Актуальность: {RecDate}\nГруппа: {Group}\n";
@@ -101,15 +99,19 @@ namespace Web
                 textDate += item.ToString();
             }
             Int32.TryParse(textDate, out intDay);
-            if ((now < minTime))
-            {
+            if (now.DayOfWeek == DayOfWeek.Saturday || now.DayOfWeek == DayOfWeek.Sunday)
+                ml = WeekSchedule.GetDaySchedule(1);
+            else if ((now < minTime))
                 ml = WeekSchedule.GetDaySchedule(((int)now.DayOfWeek));
-                //Console.WriteLine("время актуальное для вывода расписания завтрашнего дня.");
-            }
             else
             {
-                ml = WeekSchedule.GetDaySchedule(((int)now.DayOfWeek) + 1);
+                if (((int)now.DayOfWeek) == 5)
+                    ml = WeekSchedule.GetDaySchedule(1);
+                else
+                    ml = WeekSchedule.GetDaySchedule(((int)now.DayOfWeek) + 1);
+
             }
+
             int hasMovePairs = 0;
             //int hasMovePairsToSubject = 0;
 
@@ -131,11 +133,13 @@ namespace Web
             }
             for (int i = 0; i < ml.Pair.Length; i++)
             {
+
                 if (minPairs <= i + 1)
                 {
                     bool hasVal = false;
                     for (int j = 0; j < Pair.Length; j++)
                     {
+
                         int pairAct = 0;
                         string[] pairActStr;
                         try
@@ -153,33 +157,43 @@ namespace Web
                         }
                         catch (Exception ex)
                         {
-                            pairActStr = Pair[j].Split(',');
-                            pairAct = int.Parse(pairActStr[0]);
-                            if (pairAct == i + 1)
+                            if (Pair[j] == "")
                             {
-                                body += "\n_________________________________";
-                                body += $"\nПара: {pairAct}\n" +
-                                        $"Аудитория: {Place[j]}\nПредмет: {Subject[j + hasMovePairs] }\nПреподаватель: {Teacher[j]}";
-                                hasVal = true;
-                                minPairs++;
-                                break;
+                                //minPairs++;
+                                //hasVal = true;
+                                continue;
                             }
-                            pairAct = int.Parse(pairActStr[1]);
-                            if (pairAct == i + 1)
+                            else
                             {
-                                body += "\n_________________________________";
-                                body += $"\nПара: {pairAct}\n" +
-                                        $"Аудитория: {Place[j]}\nПредмет: {Subject[j + hasMovePairs] }\nПреподаватель: {Teacher[j]}";
-                                hasVal = true;
-                                minPairs++;
-                                break;
+                                pairActStr = Pair[j].Split(',');
+                                //pairAct = int.Parse(pairActStr[0]);
+                                foreach (string s in pairActStr)
+                                {
+                                    if (int.Parse(s) == i + 1)
+                                    {
+                                        pairAct = int.Parse(s);
+                                        if (j + hasMovePairs + 1 > Subject.Length)
+                                        {
+                                            hasMovePairs = 0;
+                                        }
+                                        body += "\n_________________________________";
+                                        body += $"\nПара: {pairAct}\n" +
+                                                $"Аудитория: {Place[j]}\nПредмет: {Subject[j + hasMovePairs] }\nПреподаватель: {Teacher[j]}";
+                                        hasVal = true;
+                                        minPairs++;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        hasVal = false;
+                                    }
+                                }
                             }
-
                         }
                     }
                     if (!hasVal)
                     {
-                        Console.WriteLine("Печатать с расписания");
+                        //Console.WriteLine("Печатать с расписания");
                         if (ml.Subject[i] != "")
                         {
                             body += "\n_________________________________";
@@ -198,8 +212,10 @@ namespace Web
             }
             string text = head + body;
             return text;
-
         }
+
+
+
         public static string GetSchedule()
         {
             string shedule = "1 пара: 08:30 - 09:40\n" +
@@ -217,3 +233,4 @@ namespace Web
         }
     }
 }
+

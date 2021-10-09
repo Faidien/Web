@@ -36,13 +36,13 @@ namespace Web
             {
                 if (span2[0].ChildNodes[i].Name == "tr")
                 {
-                    if (span2[0].ChildNodes[i].ChildNodes[1].InnerText == group)
+                    if (span2[0].ChildNodes[i].ChildNodes[1].InnerText.Contains(group))
                     {
                         {
                             les = new Lessons
                             {
                                 RecDate = text.Substring(0, text.IndexOf('&')),
-                                Group = span2[0].ChildNodes[i].ChildNodes[1].InnerText.ToString().Replace("&nbsp;", "").Replace("\n", @"\t"),
+                                Group = group/*span2[0].ChildNodes[i].ChildNodes[1].InnerText.ToString().Replace("&nbsp;", "").Replace("\n", @"\t")*/,
                                 Pair = span2[0].ChildNodes[i].ChildNodes[3].InnerText.ToString().Replace("&nbsp;", "").Split('\n'),
                                 Place = span2[0].ChildNodes[i].ChildNodes[5].InnerText.ToString().Replace("&nbsp;", "").Split("\n"),
                                 Subject = span2[0].ChildNodes[i].ChildNodes[7].InnerText.ToString().Replace("&nbsp;", "").Split("\n"),

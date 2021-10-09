@@ -13,12 +13,12 @@ namespace Web
         [Obsolete]
         static void Main()
         {
-            string token = File.ReadAllText(@"D:\token.txt");
+            string token = File.ReadAllText(@"\token.txt");
             bot = new TelegramBotClient(token);
             Console.WriteLine("Бот запущен!");
             bot.OnMessage += MessageListener;
             bot.StartReceiving();
-            
+            //SendLessons();
             SendAlert();
             Console.ReadLine();
         }
@@ -58,7 +58,12 @@ namespace Web
         {
             string lesson = Data.GetUpdate();
             if (e == null)
+            {
+                //bot.SendTextMessageAsync(-536570900, $"Добрый вечер!");
                 bot.SendTextMessageAsync(-536570900, $"{lesson}");
+
+            }
+
             else
                 bot.SendTextMessageAsync(e.Message.Chat.Id, $"{lesson}");
         }
@@ -69,21 +74,38 @@ namespace Web
             while (true)
             {
                 int sleepTime = 60000;
-                string hour = DateTime.Now.Hour.ToString();
-                string min = DateTime.Now.Minute.ToString();
-                if ((hour == "7" || hour == "19") /*&& isSent == false*/)
-                {
-                    switch (min)
-                    {
-                        case "5":
-                            SendLessons();
-                            sleepTime *= 12 * 60 * 12;
-                            break;
-                        default:
-                            break;
-                    }
-                }
+                TimeSpan sleep = new TimeSpan();
+                DateTime now = DateTime.Now;
+                DateTime morningAlertTime = new DateTime(now.Year, now.Month, now.Day, 7, 5, 0);
+                DateTime eveninAlertTime = new DateTime(now.Year, now.Month, now.Day, 19, 5, 0);
+                DateTime tomorrow = new DateTime(now.Year, now.Month, now.Day + 1, 0, 0, 0);
 
+                int hour = now.Hour;
+                int min = now.Minute;
+                int sec = now.Second;
+
+                if ((hour == 7 && min == 5))
+                {
+                    bot.SendTextMessageAsync(-536570900, $"Доброе утро!");
+                    SendLessons();
+                    break;
+                }
+                else if ((hour == 19 && min == 5))
+                {
+                    bot.SendTextMessageAsync(-536570900, $"Добрый вечер!");
+                    SendLessons();
+                    break;
+                }
+                else
+                {
+                    if (now <= morningAlertTime)
+                        sleep = morningAlertTime.Subtract(now);
+                    if (now <= eveninAlertTime)
+                        sleep = eveninAlertTime.Subtract(now);
+                    else
+                        sleep = tomorrow - now;
+                    sleepTime = (sleep.Hours * 60 * 60 + sleep.Minutes * 60 + sleep.Seconds) * 1000;
+                }
                 Thread.Sleep(sleepTime);
             }
         }
