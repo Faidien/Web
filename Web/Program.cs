@@ -56,16 +56,31 @@ namespace Web
         [Obsolete]
         private static void SendLessons(MessageEventArgs e = null)
         {
-            string lesson = Data.GetUpdate();
-            if (e == null)
+            long adminID = 329606681;
+            string lesson = "";
+            try
             {
-                //bot.SendTextMessageAsync(-536570900, $"Добрый вечер!");
-                bot.SendTextMessageAsync(-536570900, $"{lesson}");
+                lesson = Data.GetUpdate();
+            }
+            catch (Exception ex)
+            {
+                bot.SendTextMessageAsync(adminID, $"Аварийное завершение программы! \nСообщение: {ex.Message}" +
+                    $"\nДоп.инфа: {ex.ToString()}");
+                Environment.Exit(-1);
+            }
+            finally
+            {
+                if (e == null)
+                {
+                    //bot.SendTextMessageAsync(-536570900, $"Добрый вечер!");
+                    bot.SendTextMessageAsync(-536570900, $"{lesson}");
 
+                }
+
+                else
+                    bot.SendTextMessageAsync(e.Message.Chat.Id, $"{lesson}");
             }
 
-            else
-                bot.SendTextMessageAsync(e.Message.Chat.Id, $"{lesson}");
         }
 
         [Obsolete]
