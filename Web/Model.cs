@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Web
@@ -86,131 +87,172 @@ namespace Web
 
             int intDay = 0;
             string body = "";
+            string head = "";
+            string text = "";
+            bool isPrintMain = false;
+            string dayOfWeek = "";
+            int hasMovePairs = 0;
             int minPairs = 1;// с какой пары приходить, с какой пары начинается изменения
             DateTime now = DateTime.Now;
             MainLesson ml = new MainLesson();
             DateTime minTime = new DateTime(now.Year, now.Month, now.Day, 17, 0, 0);
+            DateTime tomorrow = new DateTime(now.Year, now.Month, now.Day + 1, 8, 0, 0);
 
-            string head = $"Актуальность: {RecDate}\nГруппа: {Group}\n";
-            var d = from c in RecDate where char.IsDigit(c) select c;
-            string textDate = "";
-            foreach (var item in d)
-            {
-                textDate += item.ToString();
-            }
-            Int32.TryParse(textDate, out intDay);
             if (now.DayOfWeek == DayOfWeek.Saturday || now.DayOfWeek == DayOfWeek.Sunday)
+            {
                 ml = WeekSchedule.GetDaySchedule(1);
+                dayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(now.DayOfWeek).ToString();
+            }
             else if ((now < minTime))
                 ml = WeekSchedule.GetDaySchedule(((int)now.DayOfWeek));
             else
             {
                 if (((int)now.DayOfWeek) == 5)
+                {
                     ml = WeekSchedule.GetDaySchedule(1);
+                    dayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(now.DayOfWeek).ToString();
+
+                }
+
                 else
+                {
                     ml = WeekSchedule.GetDaySchedule(((int)now.DayOfWeek) + 1);
+                    dayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(tomorrow.DayOfWeek).ToString();
+
+
+                }
 
             }
 
-            int hasMovePairs = 0;
-            //int hasMovePairsToSubject = 0;
-
-
-            for (int i = 0; i < Subject.Length; i++)
+            if (Subject == null)
             {
-                if (Subject[i].Contains("Прийти"))
+                head = $"Актуальность: На {dayOfWeek}\nГруппа: ТМ-129\n";
+                isPrintMain = true;
+            }
+            else
+            {
+
+                head = $"Актуальность: {RecDate}, {dayOfWeek}\nГруппа: {Group}\n";
+                var d = from c in RecDate where char.IsDigit(c) select c;
+                string textDate = "";
+                foreach (var item in d)
                 {
-                    body += "* * * * * " + Subject[i] + " * * * * *";
-                    var t = from c in Subject[i] where char.IsDigit(c) select c;
-                    hasMovePairs = 1;
-                    //hasMovePairsToSubject = 1;
-                    foreach (var item in t)
+                    textDate += item.ToString();
+                }
+                Int32.TryParse(textDate, out intDay);
+                for (int i = 0; i < Subject.Length; i++)
+                {
+                    if (Subject[i].Contains("Прийти"))
                     {
-                        Int32.TryParse(item.ToString(), out minPairs);
-                        break;
+                        body += "* * * * * " + Subject[i] + " * * * * *";
+                        var t = from c in Subject[i] where char.IsDigit(c) select c;
+                        hasMovePairs = 1;
+                        //hasMovePairsToSubject = 1;
+                        foreach (var item in t)
+                        {
+                            Int32.TryParse(item.ToString(), out minPairs);
+                            break;
+                        }
                     }
                 }
             }
+
             for (int i = 0; i < ml.Pair.Length; i++)
             {
 
                 if (minPairs <= i + 1)
                 {
                     bool hasVal = false;
-                    for (int j = 0; j < Pair.Length; j++)
+                    if (!isPrintMain)
                     {
+                        for (int j = 0; j < Pair.Length; j++)
+                        {
 
-                        int pairAct = 0;
-                        string[] pairActStr;
-                        try
-                        {
-                            pairAct = int.Parse(Pair[j]);
-                            if (pairAct == i + 1)
+                            int pairAct = 0;
+                            string[] pairActStr;
+                            try
                             {
-                                body += "\n_________________________________";
-                                body += $"\nПара: {Pair[j]}\n" +
-                                        $"Аудитория: {Place[j]}\nПредмет: {Subject[j + hasMovePairs] }\nПреподаватель: {Teacher[j]}";
-                                hasVal = true;
-                                minPairs++;
-                                break;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            if (Pair[j] == "")
-                            {
-                                //minPairs++;
-                                //hasVal = true;
-                                continue;
-                            }
-                            else
-                            {
-                                pairActStr = Pair[j].Split(',');
-                                //pairAct = int.Parse(pairActStr[0]);
-                                foreach (string s in pairActStr)
+                                pairAct = int.Parse(Pair[j]);
+                                if (pairAct == i + 1)
                                 {
-                                    if (int.Parse(s) == i + 1)
+                                    body += "\n_________________________________";
+                                    body += $"\nПара: {Pair[j]}\n" +
+                                            $"Аудитория: {Place[j]}\nПредмет: {Subject[j + hasMovePairs] }\nПреподаватель: {Teacher[j]}";
+                                    hasVal = true;
+                                    minPairs++;
+                                    break;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                if (Pair[j] == "")
+                                {
+                                    //minPairs++;
+                                    //hasVal = true;
+                                    continue;
+                                }
+                                else
+                                {
+                                    pairActStr = Pair[j].Split(',');
+                                    //pairAct = int.Parse(pairActStr[0]);
+                                    foreach (string s in pairActStr)
                                     {
-                                        pairAct = int.Parse(s);
-                                        if (j + hasMovePairs + 1 > Subject.Length)
+                                        if (int.Parse(s) == i + 1)
                                         {
-                                            hasMovePairs = 0;
+                                            pairAct = int.Parse(s);
+                                            if (j + hasMovePairs + 1 > Subject.Length)
+                                            {
+                                                hasMovePairs = 0;
+                                            }
+                                            body += "\n_________________________________";
+                                            body += $"\nПара: {pairAct}\n" +
+                                                    $"Аудитория: {Place[j]}\nПредмет: {Subject[j + hasMovePairs] }\nПреподаватель: {Teacher[j]}";
+                                            hasVal = true;
+                                            minPairs++;
+                                            break;
                                         }
-                                        body += "\n_________________________________";
-                                        body += $"\nПара: {pairAct}\n" +
-                                                $"Аудитория: {Place[j]}\nПредмет: {Subject[j + hasMovePairs] }\nПреподаватель: {Teacher[j]}";
-                                        hasVal = true;
-                                        minPairs++;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        hasVal = false;
+                                        else
+                                        {
+                                            hasVal = false;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                    if (!hasVal)
-                    {
-                        //Console.WriteLine("Печатать с расписания");
-                        if (ml.Subject[i] != "")
+                        if (!hasVal)
                         {
-                            body += "\n_________________________________";
-                            body += $"\nПара: {ml.Pair[i]}\n" +
-                                    $"Аудитория: {ml.Place[i]}\nПредмет: {ml.Subject[i]}";
-                            hasVal = false;
-                        }
+                            if (ml.Subject[i] != "")
+                            {
+                                body += "\n_________________________________";
+                                body += $"\nПара: {ml.Pair[i]}\n" +
+                                        $"Аудитория: {ml.Place[i]}\nПредмет: {ml.Subject[i]}";
+                                hasVal = false;
+                            }
 
+                        }
+                    }
+                    else
+                    {
+                        if (!hasVal)
+                        {
+                            if (ml.Subject[i] != "")
+                            {
+                                body += "\n_________________________________";
+                                body += $"\nПара: {ml.Pair[i]}\n" +
+                                        $"Аудитория: {ml.Place[i]}\nПредмет: {ml.Subject[i]}";
+                                hasVal = false;
+                            }
+
+                        }
                     }
                 }
-                else
-                {
-                    // не печатать потому что приходить позже надо 
-                }
+                //else
+                //{
+                //    // не печатать потому что приходить позже надо 
+                //}
 
             }
-            string text = head + body;
+            text = head + body;
             return text;
         }
 

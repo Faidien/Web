@@ -13,6 +13,7 @@ namespace Web
         [Obsolete]
         static void Main()
         {
+
             string token = File.ReadAllText(@"\token.txt");
             bot = new TelegramBotClient(token);
             Console.WriteLine("Бот запущен!");
@@ -22,6 +23,7 @@ namespace Web
             SendAlert();
             Console.ReadLine();
         }
+
 
         [Obsolete]
         private static void MessageListener(object sender, Telegram.Bot.Args.MessageEventArgs e)

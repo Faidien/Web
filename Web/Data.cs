@@ -51,6 +51,11 @@ namespace Web
                             return les.GetStringToSend();
                         }
                     }
+                    else
+                    {
+                        les = new Lessons { Group = "", Pair = null, Place = null, RecDate = "Нет данных", Subject = null, Teacher = null };
+                        //return les.GetStringToSend();
+                    }
                 }
             }
             les = new Lessons { Group = "", Pair = null, Place = null, RecDate = "Нет данных", Subject = null, Teacher = null };
