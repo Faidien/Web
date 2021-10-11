@@ -53,12 +53,12 @@ namespace Web
                     }
                     else
                     {
-                        les = new Lessons { Group = "", Pair = null, Place = null, RecDate = "Нет данных", Subject = null, Teacher = null };
+                        les = new Lessons { Group = "", Pair = null, Place = null, RecDate = text.Substring(0, text.IndexOf('&')), Subject = null, Teacher = null };
                         //return les.GetStringToSend();
                     }
                 }
             }
-            les = new Lessons { Group = "", Pair = null, Place = null, RecDate = "Нет данных", Subject = null, Teacher = null };
+            les = new Lessons { Group = "", Pair = null, Place = null, RecDate = text.Substring(0, text.IndexOf('&')), Subject = null, Teacher = null };
             return les.GetStringToSend();
         }
         //public static void /*List<Lessons> */GetUpdatev2(string group = "ТМ-129")

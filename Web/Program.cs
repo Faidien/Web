@@ -117,7 +117,7 @@ namespace Web
                 {
                     if (now <= morningAlertTime)
                         sleep = morningAlertTime.Subtract(now);
-                    if (now <= eveninAlertTime)
+                    else if (now <= eveninAlertTime)
                         sleep = eveninAlertTime.Subtract(now);
                     else
                         sleep = tomorrow - now;

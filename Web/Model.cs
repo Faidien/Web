@@ -104,7 +104,11 @@ namespace Web
                 dayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(now.DayOfWeek).ToString();
             }
             else if ((now < minTime))
+            {
                 ml = WeekSchedule.GetDaySchedule(((int)now.DayOfWeek));
+                dayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(now.DayOfWeek).ToString();
+
+            }
             else
             {
                 if (((int)now.DayOfWeek) == 5)
@@ -126,20 +130,20 @@ namespace Web
 
             if (Subject == null)
             {
-                head = $"Актуальность: На {dayOfWeek}\nГруппа: ТМ-129\n";
+                head = $"Актуальность: {RecDate}, {dayOfWeek}.\nГруппа: ТМ-129\n";
                 isPrintMain = true;
             }
             else
             {
 
-                head = $"Актуальность: {RecDate}, {dayOfWeek}\nГруппа: {Group}\n";
-                var d = from c in RecDate where char.IsDigit(c) select c;
-                string textDate = "";
-                foreach (var item in d)
-                {
-                    textDate += item.ToString();
-                }
-                Int32.TryParse(textDate, out intDay);
+                head = $"Актуальность: {RecDate}, {dayOfWeek}.\nГруппа: {Group}\n";
+                //var d = from c in RecDate where char.IsDigit(c) select c;
+                //string textDate = "";
+                //foreach (var item in d)
+                //{
+                //    textDate += item.ToString();
+                //}
+                //Int32.TryParse(textDate, out intDay);
                 for (int i = 0; i < Subject.Length; i++)
                 {
                     if (Subject[i].Contains("Прийти"))
