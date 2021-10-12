@@ -82,184 +82,209 @@ namespace Web
             Console.WriteLine($"Преподаватель: {Teacher}");
 
         }
+        /// <summary>
+        /// Получение дня недели в соотвествии с правилами
+        /// </summary>
+        /// <returns>Если день недели - СБ, ВС, ПТ после 17.00 - вернет "Понедельник". Если любой другой день и время меньше 17.00 - возвращает текущий день. Иначе - завтрашний день</returns>
+        private static DayOfWeek GetDayOfWeek()
+        {
+            DateTime now = DateTime.Now;
+            DayOfWeek today = now.DayOfWeek;
+            DateTime minTime = new DateTime(now.Year, now.Month, now.Day, 17, 0, 0);
+            DateTime tomorrow = new DateTime(now.Year, now.Month, now.Day + 1, now.Hour, now.Minute, now.Second);
+
+            if (today == DayOfWeek.Saturday || today == DayOfWeek.Sunday || (today == DayOfWeek.Friday && now > minTime))
+                return DayOfWeek.Monday;
+            else if ((now < minTime))
+                return today;
+            else
+                return tomorrow.DayOfWeek;
+        }
+
+        /// <summary>
+        /// Получение номера дня недели
+        /// </summary>
+        /// <param name="day"></param>
+        /// <returns>Номер дня недели</returns>
+        private int GetIntOfDay(DayOfWeek day) => (int)day;
+
+        /// <summary>
+        /// Получение название дня недели
+        /// </summary>
+        /// <param name="day"></param>
+        /// <returns>Название дня недели в соответсвии с текущими региональными настройками языка и формата даты</returns>
+        private string GetStringOfDay(DayOfWeek day) => CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(day);
+
+        /// <summary>
+        /// Получить строки с актуальным, корректным расписанием.
+        /// </summary>
+        /// <returns>Текст готового расписания с учетом замен</returns>
         public string GetStringToSend()
         {
-
-            int intDay = 0;
-            string body = "";
-            string head = "";
-            string text = "";
-            bool isPrintMain = false;
-            string dayOfWeek = "";
-            int hasMovePairs = 0;
-            int minPairs = 1;// с какой пары приходить, с какой пары начинается изменения
-            DateTime now = DateTime.Now;
-            MainLesson ml = new MainLesson();
-            DateTime minTime = new DateTime(now.Year, now.Month, now.Day, 17, 0, 0);
-            DateTime tomorrow = new DateTime(now.Year, now.Month, now.Day + 1, 8, 0, 0);
-
-            if (now.DayOfWeek == DayOfWeek.Saturday || now.DayOfWeek == DayOfWeek.Sunday)
+            string text = HeadBuild() + BodyBuild();
+            return text;
+        }
+        /// <summary>
+        /// Получение номера пары, с которой начинается замены. 
+        /// </summary>
+        /// <returns>Если замен по группе нет: -1. Если нет указания прийти к конкретной паре: 0. Иначе вернет номер пары. </returns>
+        private int GetMinPairs()
+        {
+            int minPairs = 0;
+            if (Subject != null)
             {
-                ml = WeekSchedule.GetDaySchedule(1);
-                dayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(now.DayOfWeek).ToString();
-            }
-            else if ((now < minTime))
-            {
-                ml = WeekSchedule.GetDaySchedule(((int)now.DayOfWeek));
-                dayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(now.DayOfWeek).ToString();
-
-            }
-            else
-            {
-                if (((int)now.DayOfWeek) == 5)
-                {
-                    ml = WeekSchedule.GetDaySchedule(1);
-                    dayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(now.DayOfWeek).ToString();
-
-                }
-
-                else
-                {
-                    ml = WeekSchedule.GetDaySchedule(((int)now.DayOfWeek) + 1);
-                    dayOfWeek = CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(tomorrow.DayOfWeek).ToString();
-
-
-                }
-
-            }
-
-            if (Subject == null)
-            {
-                head = $"Актуальность: {RecDate}, {dayOfWeek}.\nГруппа: ТМ-129\n";
-                isPrintMain = true;
-            }
-            else
-            {
-
-                head = $"Актуальность: {RecDate}, {dayOfWeek}.\nГруппа: {Group}\n";
-                //var d = from c in RecDate where char.IsDigit(c) select c;
-                //string textDate = "";
-                //foreach (var item in d)
-                //{
-                //    textDate += item.ToString();
-                //}
-                //Int32.TryParse(textDate, out intDay);
                 for (int i = 0; i < Subject.Length; i++)
                 {
                     if (Subject[i].Contains("Прийти"))
                     {
-                        body += "* * * * * " + Subject[i] + " * * * * *";
                         var t = from c in Subject[i] where char.IsDigit(c) select c;
-                        hasMovePairs = 1;
-                        //hasMovePairsToSubject = 1;
                         foreach (var item in t)
                         {
-                            Int32.TryParse(item.ToString(), out minPairs);
+                            int.TryParse(item.ToString(), out minPairs);
                             break;
                         }
                     }
                 }
             }
+            else
+                return -1;
+            return minPairs;
+        }
 
-            for (int i = 0; i < ml.Pair.Length; i++)
+        /// <summary>
+        /// Получение числа на которое нужно "сдвинуть" предметы для корректного вывода.
+        /// </summary>
+        /// <returns>Вернет 1 в случае наличия ненужного текста в предметах(обычно это одна строка, в которой написано, к какой паре прийти). Иначе вернет 0</returns>
+        private int GetOffsetSubject()
+        {
+            if (GetMinPairs() > 0)
+                return 1;
+            else
+                return 0;
+        }
+
+        /// <summary>
+        /// Выбор источника для печати расписания
+        /// </summary>
+        /// <returns>Вернет true, если замен не было. Иначе false</returns>
+        private bool IsPrintMainSchedule()
+        {
+            return GetMinPairs() == -1;
+        }
+
+        /// <summary>
+        /// Построение "заголовка" сообщения.
+        /// </summary>
+        /// <returns>Текст заголовка: дата актуальности, группа, к какой паре прийти</returns>
+        private string HeadBuild()
+        {
+            int pair = GetMinPairs();
+            string s = "* * * * * Прийти ";
+            if (pair <= 0)
+                s += "по расписанию * * * * ";
+            else
+                s += $"к {pair} паре";
+            string dayOfWeek = GetStringOfDay(GetDayOfWeek());
+            return $"Актуальность: {RecDate}, {dayOfWeek}.\nГруппа: ТМ-129\n" + s;
+        }
+
+        private int GetCurrentPair(int pos, int mainPos)
+        {
+            int pairAct = 1;
+            string[] pairActStr = GetPairString(pos);
+            foreach (string s in pairActStr)
             {
+                if (int.TryParse(s, out pairAct) && pairAct == mainPos + 1)
+                    return pairAct;
+            }
+            return pairAct;
+        }
 
-                if (minPairs <= i + 1)
+        private string[] GetPairString(int pos)
+        {
+            string[] pairActStr = new string[] { };
+            if (Pair[pos].Contains(','))
+                pairActStr = Pair[pos].Split(',');
+            else
+                pairActStr.Append(Pair[pos]);
+            return pairActStr;
+
+
+        }
+
+        /// <summary>
+        /// Построение "тела" сообщения.
+        /// </summary>
+        /// <returns>Текс пар по порядку с заменами, если были.</returns>
+        private string BodyBuild()
+        {
+            string text = "";
+            int minPairs = GetMinPairs();
+            bool isPrintMain = IsPrintMainSchedule();
+            int numOffsetSubject = GetOffsetSubject();
+            int pairAct = 1;
+            for (int i = 0; i < 6; i++)
+            {
+                bool hasReplacement = false;
+                if (!isPrintMain)
                 {
-                    bool hasVal = false;
-                    if (!isPrintMain)
+                    if (minPairs <= i + 1)
                     {
                         for (int j = 0; j < Pair.Length; j++)
                         {
-
-                            int pairAct = 0;
-                            string[] pairActStr;
-                            try
+                            pairAct = GetCurrentPair(j, i);
+                            if (j + numOffsetSubject + 1 > Subject.Length)
                             {
-                                pairAct = int.Parse(Pair[j]);
-                                if (pairAct == i + 1)
-                                {
-                                    body += "\n_________________________________";
-                                    body += $"\nПара: {Pair[j]}\n" +
-                                            $"Аудитория: {Place[j]}\nПредмет: {Subject[j + hasMovePairs] }\nПреподаватель: {Teacher[j]}";
-                                    hasVal = true;
-                                    minPairs++;
-                                    break;
-                                }
+                                numOffsetSubject = 0;
                             }
-                            catch (Exception ex)
-                            {
-                                if (Pair[j] == "")
-                                {
-                                    //minPairs++;
-                                    //hasVal = true;
-                                    continue;
-                                }
-                                else
-                                {
-                                    pairActStr = Pair[j].Split(',');
-                                    //pairAct = int.Parse(pairActStr[0]);
-                                    foreach (string s in pairActStr)
-                                    {
-                                        if (int.Parse(s) == i + 1)
-                                        {
-                                            pairAct = int.Parse(s);
-                                            if (j + hasMovePairs + 1 > Subject.Length)
-                                            {
-                                                hasMovePairs = 0;
-                                            }
-                                            body += "\n_________________________________";
-                                            body += $"\nПара: {pairAct}\n" +
-                                                    $"Аудитория: {Place[j]}\nПредмет: {Subject[j + hasMovePairs] }\nПреподаватель: {Teacher[j]}";
-                                            hasVal = true;
-                                            minPairs++;
-                                            break;
-                                        }
-                                        else
-                                        {
-                                            hasVal = false;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (!hasVal)
-                        {
-                            if (ml.Subject[i] != "")
-                            {
-                                body += "\n_________________________________";
-                                body += $"\nПара: {ml.Pair[i]}\n" +
-                                        $"Аудитория: {ml.Place[i]}\nПредмет: {ml.Subject[i]}";
-                                hasVal = false;
-                            }
-
+                            text += GetReplacementSchedule(j, pairAct, numOffsetSubject);
+                            hasReplacement = true;
+                            minPairs++;
                         }
                     }
-                    else
+                    if (!hasReplacement)
                     {
-                        if (!hasVal)
-                        {
-                            if (ml.Subject[i] != "")
-                            {
-                                body += "\n_________________________________";
-                                body += $"\nПара: {ml.Pair[i]}\n" +
-                                        $"Аудитория: {ml.Place[i]}\nПредмет: {ml.Subject[i]}";
-                                hasVal = false;
-                            }
-
-                        }
+                        text += GetOroginalSchedule(i);
                     }
                 }
-                //else
-                //{
-                //    // не печатать потому что приходить позже надо 
-                //}
-
+                else
+                    text += GetOroginalSchedule(i);
             }
-            text = head + body;
+            return text;
+        }
+        /// <summary>
+        /// Получение занятий с оригинального расписания
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <returns>Текст занятия по позиции</returns>
+        private string GetOroginalSchedule(int pos)
+        {
+            string text = "";
+            MainLesson ml = WeekSchedule.GetDaySchedule(GetIntOfDay(GetDayOfWeek()));
+            if (ml.Subject[pos] != "")
+            {
+                text += "\n_________________________________";
+                text += $"\nПара: {ml.Pair[pos]}\n" +
+                        $"Аудитория: {ml.Place[pos]}\nПредмет: {ml.Subject[pos]}";
+            }
             return text;
         }
 
+        /// <summary>
+        /// Получение занятий с замен
+        /// </summary>
+        /// <param name="pos">Позиция в массиве </param>
+        /// <param name="pairAct">Пара</param>
+        /// <param name="numMovePairs">Число сдвига предметов</param>
+        /// <returns>Текст занятия с замен на сайте</returns>
+        private string GetReplacementSchedule(int pos, int pairAct, int numMovePairs)
+        {
+            string text = "";
+            text += "\n_________________________________";
+            text += $"\nПара: {pairAct}\n" +
+                    $"Аудитория: {Place[pos]}\nПредмет: {Subject[pos + numMovePairs] }\nПреподаватель: {Teacher[pos]}";
+            return text;
+        }
 
 
         public static string GetSchedule()

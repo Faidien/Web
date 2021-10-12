@@ -19,14 +19,18 @@ namespace Web
             Console.WriteLine("Бот запущен!");
             bot.OnMessage += MessageListener;
             bot.StartReceiving();
-            //SendLessons();
             SendAlert();
             Console.ReadLine();
         }
 
-
+        /// <summary>
+        /// Слушает входящие сообщения от пользователей.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         [Obsolete]
-        private static void MessageListener(object sender, Telegram.Bot.Args.MessageEventArgs e)
+
+        private static void MessageListener(object sender, MessageEventArgs e)
         {
             string text = $"{DateTime.Now.ToLongTimeString()}: {e.Message.Chat.FirstName} " +
                 $"{e.Message.Chat.Id} {e.Message.Text}";
@@ -50,11 +54,13 @@ namespace Web
 
                 default:
                     bot.SendTextMessageAsync(e.Message.Chat.Id, $"{e.Message.Chat.FirstName}, пока что реализована только команда /update и /schedule");
-                    //bot.SendTextMessageAsync(e.Message.Chat.Id, $"Бот еще в стадии тестирования и разработки. По вопросам и предложениям писать @Fixway");
                     break;
             }
         }
-
+        /// <summary>
+        /// Отправка расписания в ответ на команду апдейт
+        /// </summary>
+        /// <param name="e"></param>
         [Obsolete]
         private static void SendLessons(MessageEventArgs e = null)
         {
@@ -84,7 +90,9 @@ namespace Web
             }
 
         }
-
+        /// <summary>
+        /// Отправка сообщения по расписанию - в 7 утра и вечера.
+        /// </summary>
         [Obsolete]
         private static void SendAlert()
         {
