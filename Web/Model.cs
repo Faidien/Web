@@ -11,7 +11,8 @@ namespace Web
         public static MainLesson GetDaySchedule(int day)
         {
             ml = SetWeekSch();
-            for (int i = 0; i < ml.Length; i++)
+            int p = ml.Length;
+            for (int i = 0; i < p; i++)
             {
                 if (i + 1 == day)
                 {
@@ -124,6 +125,7 @@ namespace Web
             string text = HeadBuild() + BodyBuild();
             return text;
         }
+
         /// <summary>
         /// Получение номера пары, с которой начинается замены. 
         /// </summary>
@@ -155,9 +157,9 @@ namespace Web
         /// Получение числа на которое нужно "сдвинуть" предметы для корректного вывода.
         /// </summary>
         /// <returns>Вернет 1 в случае наличия ненужного текста в предметах(обычно это одна строка, в которой написано, к какой паре прийти). Иначе вернет 0</returns>
-        private int GetOffsetSubject()
+        private int GetOffsetSubject(int subject)
         {
-            if (GetMinPairs() > 0)
+            if (subject > 0)
                 return 1;
             else
                 return 0;
@@ -167,9 +169,9 @@ namespace Web
         /// Выбор источника для печати расписания
         /// </summary>
         /// <returns>Вернет true, если замен не было. Иначе false</returns>
-        private bool IsPrintMainSchedule()
+        private bool IsPrintMainSchedule(int pair)
         {
-            return GetMinPairs() == -1;
+            return pair == -1;
         }
 
         /// <summary>
@@ -183,18 +185,18 @@ namespace Web
             if (pair <= 0)
                 s += "по расписанию * * * * ";
             else
-                s += $"к {pair} паре";
+                s += $"к {pair} паре * * * * *";
             string dayOfWeek = GetStringOfDay(GetDayOfWeek());
             return $"Актуальность: {RecDate}, {dayOfWeek}.\nГруппа: ТМ-129\n" + s;
         }
 
         private int GetCurrentPair(int pos, int mainPos)
         {
-            int pairAct = 1;
+            int pairAct = 0;
             string[] pairActStr = GetPairString(pos);
             foreach (string s in pairActStr)
             {
-                if (int.TryParse(s, out pairAct) && pairAct == mainPos + 1)
+                if (int.TryParse(s, out pairAct) && pairAct == mainPos)
                     return pairAct;
             }
             return pairAct;
@@ -202,11 +204,11 @@ namespace Web
 
         private string[] GetPairString(int pos)
         {
-            string[] pairActStr = new string[] { };
+            string[] pairActStr = new string[Pair.Length];
             if (Pair[pos].Contains(','))
                 pairActStr = Pair[pos].Split(',');
             else
-                pairActStr.Append(Pair[pos]);
+                pairActStr[0] = Pair[pos];
             return pairActStr;
 
 
@@ -220,31 +222,39 @@ namespace Web
         {
             string text = "";
             int minPairs = GetMinPairs();
-            bool isPrintMain = IsPrintMainSchedule();
-            int numOffsetSubject = GetOffsetSubject();
+            bool isPrintMain = IsPrintMainSchedule(minPairs);
+            int numOffsetSubject = GetOffsetSubject(minPairs);
             int pairAct = 1;
-            for (int i = 0; i < 6; i++)
+            for (int i = 1; i <= 6; i++)
             {
                 bool hasReplacement = false;
                 if (!isPrintMain)
                 {
-                    if (minPairs <= i + 1)
+                    if (minPairs <= i)
                     {
                         for (int j = 0; j < Pair.Length; j++)
                         {
                             pairAct = GetCurrentPair(j, i);
-                            if (j + numOffsetSubject + 1 > Subject.Length)
+                            if (pairAct == 0)
                             {
-                                numOffsetSubject = 0;
+                                continue;
                             }
-                            text += GetReplacementSchedule(j, pairAct, numOffsetSubject);
-                            hasReplacement = true;
-                            minPairs++;
+                            else
+                            {
+                                if (j + numOffsetSubject >= Subject.Length)
+                                {
+                                    numOffsetSubject = 0;
+                                }
+                                text += GetReplacementSchedule(j, pairAct, numOffsetSubject);
+                                hasReplacement = true;
+                                minPairs++;
+                            }
+
                         }
-                    }
-                    if (!hasReplacement)
-                    {
-                        text += GetOroginalSchedule(i);
+                        if (!hasReplacement)
+                        {
+                            text += GetOroginalSchedule(i);
+                        }
                     }
                 }
                 else
@@ -259,13 +269,14 @@ namespace Web
         /// <returns>Текст занятия по позиции</returns>
         private string GetOroginalSchedule(int pos)
         {
+            int posit = pos - 1;
             string text = "";
             MainLesson ml = WeekSchedule.GetDaySchedule(GetIntOfDay(GetDayOfWeek()));
-            if (ml.Subject[pos] != "")
+            if (ml.Subject[posit] != "")
             {
                 text += "\n_________________________________";
-                text += $"\nПара: {ml.Pair[pos]}\n" +
-                        $"Аудитория: {ml.Place[pos]}\nПредмет: {ml.Subject[pos]}";
+                text += $"\nПара: {ml.Pair[posit]}\n" +
+                        $"Аудитория: {ml.Place[posit]}\nПредмет: {ml.Subject[posit]}";
             }
             return text;
         }
