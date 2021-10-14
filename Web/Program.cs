@@ -3,6 +3,7 @@ using System.IO;
 using Telegram.Bot;
 using Telegram.Bot.Args;
 using System.Threading;
+using System.Collections.Generic;
 
 namespace Web
 {
@@ -10,10 +11,12 @@ namespace Web
     internal class Program
     {
         static TelegramBotClient bot;
+        public static List<Lessons> lessons;
+
         [Obsolete]
         static void Main()
         {
-
+            lessons = Data.GetLessons();
             string token = File.ReadAllText(@"\token.txt");
             bot = new TelegramBotClient(token);
             Console.WriteLine("Бот запущен!");
@@ -22,6 +25,7 @@ namespace Web
             SendAlert();
             Console.ReadLine();
         }
+
 
         /// <summary>
         /// Слушает входящие сообщения от пользователей.
@@ -44,7 +48,6 @@ namespace Web
                 case "/update":
                     SendLessons(e);
                     break;
-
                 case "/schedule":
                     bot.SendTextMessageAsync(e.Message.Chat.Id, Lessons.GetSchedule());
                     break;
@@ -54,6 +57,7 @@ namespace Web
 
                 default:
                     bot.SendTextMessageAsync(e.Message.Chat.Id, $"{e.Message.Chat.FirstName}, пока что реализована только команда /update и /schedule");
+                    //bot.SendStickerAsync(e.Message.Chat.Id,)
                     break;
             }
         }
@@ -62,13 +66,13 @@ namespace Web
         /// </summary>
         /// <param name="e"></param>
         [Obsolete]
-        private static void SendLessons(MessageEventArgs e = null)
+        private static void SendLessons(MessageEventArgs e = null, bool modeNum = false)
         {
             long adminID = 329606681;
             string lesson = "";
             try
             {
-                lesson = Data.GetUpdate();
+                lesson = Data.GetUpdate(modeNum);
             }
             catch (Exception ex)
             {
@@ -99,6 +103,7 @@ namespace Web
             while (true)
             {
                 int sleepTime = 60000;
+                bool isNeedUpdated = true;
                 TimeSpan sleep = new TimeSpan();
                 DateTime now = DateTime.Now;
                 DateTime morningAlertTime = new DateTime(now.Year, now.Month, now.Day, 7, 5, 0);
@@ -118,7 +123,7 @@ namespace Web
                 else if ((hour == 19 && min == 5))
                 {
                     bot.SendTextMessageAsync(-536570900, $"Добрый вечер!");
-                    SendLessons();
+                    SendLessons(modeNum: isNeedUpdated);
                     break;
                 }
                 else

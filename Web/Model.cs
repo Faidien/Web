@@ -186,8 +186,8 @@ namespace Web
                 s += "по расписанию * * * * ";
             else
                 s += $"к {pair} паре * * * * *";
-            string dayOfWeek = GetStringOfDay(GetDayOfWeek());
-            return $"Актуальность: {RecDate}, {dayOfWeek}.\nГруппа: ТМ-129\n" + s;
+            //string dayOfWeek = GetStringOfDay(GetDayOfWeek());, { dayOfWeek}
+            return $"Актуальность: {RecDate}.\nГруппа: {Group}\n" + s;
         }
 
         private int GetCurrentPair(int pos, int mainPos)
@@ -196,8 +196,12 @@ namespace Web
             string[] pairActStr = GetPairString(pos);
             foreach (string s in pairActStr)
             {
-                if (int.TryParse(s, out pairAct) && pairAct == mainPos)
-                    return pairAct;
+                if (int.TryParse(s, out int num))
+                {
+                    if (num == mainPos)
+                        pairAct = num;
+                }
+
             }
             return pairAct;
         }
@@ -248,6 +252,7 @@ namespace Web
                                 text += GetReplacementSchedule(j, pairAct, numOffsetSubject);
                                 hasReplacement = true;
                                 minPairs++;
+                                pairAct = 0;
                             }
 
                         }
