@@ -139,11 +139,11 @@ namespace Web
         }
         public static string GetUpdate(bool isNeedIpdate, string group = "ТМ-129")
         {
-            List<Lessons> lst = Program.lessons;
             if (isNeedIpdate)
             {
-                lst = GetLessons();
+                Program.lessons = GetLessons();
             }
+            List<Lessons> lst = Program.lessons;
             foreach (var item in lst)
             {
                 if (item.Group.Contains(group))
