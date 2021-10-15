@@ -10,6 +10,8 @@ namespace Web
 
     internal class Program
     {
+        static long adminID = 329606681;
+        static int sleepTime = 60000;
         static TelegramBotClient bot;
         public static List<Lessons> lessons;
 
@@ -48,6 +50,22 @@ namespace Web
                 case "/update":
                     SendLessons(e);
                     break;
+                //case "/turnOff":
+                //    if (e.Message.Chat.Id == adminID)
+                //    {
+                //        bot.SendTextMessageAsync(e.Message.Chat.Id, "Бот будет выключен!");
+                //        Environment.Exit(0);
+                //    }
+                //    else
+                //        bot.SendTextMessageAsync(e.Message.Chat.Id, "Команда доступна только для администратора!");
+                //    break;
+                case "/timeupd":
+                    DateTime now = DateTime.Now;
+                    TimeSpan sleep = new TimeSpan();
+                    DateTime eveninAlertTime = new DateTime(now.Year, now.Month, now.Day, 19, 5, 0);
+                    sleep = eveninAlertTime.Subtract(now);
+                    bot.SendTextMessageAsync(e.Message.Chat.Id, $"До обновления расписания осталось - {sleep.Hours}:{sleep.Minutes}:{sleep.Seconds}");
+                    break;
                 case "/schedule":
                     bot.SendTextMessageAsync(e.Message.Chat.Id, Lessons.GetSchedule());
                     break;
@@ -68,7 +86,6 @@ namespace Web
         [Obsolete]
         private static void SendLessons(MessageEventArgs e = null, bool modeNum = false)
         {
-            long adminID = 329606681;
             string lesson = "";
             try
             {
@@ -102,7 +119,7 @@ namespace Web
         {
             while (true)
             {
-                int sleepTime = 60000;
+
                 bool isNeedUpdated = true;
                 TimeSpan sleep = new TimeSpan();
                 DateTime now = DateTime.Now;
