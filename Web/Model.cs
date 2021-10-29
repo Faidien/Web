@@ -35,7 +35,7 @@ namespace Web
                 {
                     Pair = new string[] { "1", "2", "3", "4", "5", "6" },
                     Place = new string[] { "", "", "304", "115", "", "116" },
-                    Subject = new string[] { "", "", "Инженерный дизайн", "МДК 03. 01", "Физкультура", "Технологическая оснастка" }
+                    Subject = new string[] { "", "", "Инженерный дизайн(знаменатель)", "МДК 03. 01", "Физкультура", "Технологическая оснастка" }
                 },
                 new MainLesson
                 {
@@ -297,9 +297,20 @@ namespace Web
         {
             string text = "";
             text += "\n_________________________________";
-            text += $"\nПара: {pairAct}\n" +
-                    $"Аудитория: {Place[pos]}\nПредмет: {Subject[pos + numMovePairs] }\nПреподаватель: {Teacher[pos]}";
+            try
+            {
+
+                text += $"\nПара: {pairAct}\n" +
+                        $"Аудитория: {Place[pos]}\nПредмет: {Subject[pos + numMovePairs] }\nПреподаватель: {Teacher[pos]}";
+            }
+            catch
+            {
+                text += $"\nПара: {pairAct}\n" +
+                        $"Аудитория: {Place[pos]}\nПредмет: {Subject[Subject.Length-1] }\nПреподаватель: {Teacher[pos]}";
+            }
+
             return text;
+
         }
 
 

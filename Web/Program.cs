@@ -8,20 +8,16 @@ using System.Collections.Generic;
 namespace Web
 {
 
-    internal class Program
+    class Program
     {
-        static long adminID = 329606681;
+        static long adminID = 979093450;
         static int sleepTime = 60000;
         static TelegramBotClient bot;
-        public static List<Lessons> lessons;
-
-
 
         [Obsolete]
-        static void Main()
+         static void Main()
         {
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(CurrentDomain_ProcessExit);
-            lessons = Data.GetLessons();
             string token = File.ReadAllText(@"\token.txt");
             bot = new TelegramBotClient(token);
             Console.WriteLine("Бот запущен!");
@@ -60,12 +56,13 @@ namespace Web
                 //case "/turnOff":
                 //    if (e.Message.Chat.Id == adminID)
                 //    {
+                //        bot.StopReceiving();
                 //        bot.SendTextMessageAsync(e.Message.Chat.Id, "Бот будет выключен!");
-                //        Environment.Exit(0);
+                //        //Environment.Exit(0);
                 //    }
-                //    else
-                //        bot.SendTextMessageAsync(e.Message.Chat.Id, "Команда доступна только для администратора!");
-                //    break;
+                //else
+                //    bot.SendTextMessageAsync(e.Message.Chat.Id, "Команда доступна только для администратора!");
+                //break;
                 case "/timeupd":
                     DateTime now = DateTime.Now;
                     TimeSpan sleep = new TimeSpan();
@@ -76,12 +73,15 @@ namespace Web
                 case "/schedule":
                     bot.SendTextMessageAsync(e.Message.Chat.Id, Lessons.GetSchedule());
                     break;
-                case "Алло":
-                    bot.SendTextMessageAsync(e.Message.Chat.Id, $"{e.Message.Chat.FirstName}, да здрасьте, здрасьте!");
+                case "/fupd":
+                    SendLessons(e, true);
                     break;
+                //case "Алло":
+                //    bot.SendTextMessageAsync(e.Message.Chat.Id, $"{e.Message.Chat.FirstName}, да здрасьте, здрасьте!");
+                //    break;
 
                 default:
-                    bot.SendTextMessageAsync(e.Message.Chat.Id, $"{e.Message.Chat.FirstName}, пока что реализована только команда /update и /schedule");
+                    bot.SendTextMessageAsync(e.Message.Chat.Id, $"{e.Message.Chat.FirstName}, пока что реализована только команда /update, /schedule, /timeupd");
                     //bot.SendStickerAsync(e.Message.Chat.Id,)
                     break;
             }

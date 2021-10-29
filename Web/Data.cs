@@ -7,6 +7,7 @@ using System.Net;
 
 namespace Web
 {
+
     struct DataTable
     {
         public string Title { get; set; }
@@ -18,7 +19,7 @@ namespace Web
         public static HtmlNodeCollection GetDoc()
         {
             WebClient web = new();
-            using (Stream str = web.OpenRead("https://new.volit.ru/замена-занятий/"))
+            using (Stream str = web.OpenRead("https://volit.ru/замена-занятий/"))
             {
                 HtmlDocument doc = new();
                 doc.Load(str);
@@ -43,7 +44,8 @@ namespace Web
                         {
                             if (p.Name == "p")
                             {
-                                pText += p.InnerText.Replace("\n", "").Replace("&#8211;", "");
+                                if (!p.InnerText.ToLower().Contains("загрузка"))
+                                    pText += p.InnerText.Replace("\n", " ").Replace("&#8211;", " ") + " ";
                             }
                             else if (p.Name == "table")
                             {
@@ -82,7 +84,6 @@ namespace Web
                     var row = rows.SelectNodes(".//td");
                     if (row != null && row.Count > 0)
                     {
-                        //Console.WriteLine(row[0].InnerText);
                         if (row.Count == 4)
                         {
                             if (!isMerged)
@@ -139,11 +140,7 @@ namespace Web
         }
         public static string GetUpdate(bool isNeedIpdate, string group = "ТМ-129")
         {
-            if (isNeedIpdate)
-            {
-                Program.lessons = GetLessons();
-            }
-            List<Lessons> lst = Program.lessons;
+            List<Lessons> lst = GetLessons();
             foreach (var item in lst)
             {
                 if (item.Group.Contains(group))
