@@ -15,7 +15,7 @@ namespace Web
         static TelegramBotClient bot;
 
         [Obsolete]
-         static void Main()
+        static void Main()
         {
             AppDomain.CurrentDomain.ProcessExit += new EventHandler(CurrentDomain_ProcessExit);
             string token = File.ReadAllText(@"\token.txt");
@@ -132,7 +132,23 @@ namespace Web
                 DateTime now = DateTime.Now;
                 DateTime morningAlertTime = new DateTime(now.Year, now.Month, now.Day, 7, 5, 0);
                 DateTime eveninAlertTime = new DateTime(now.Year, now.Month, now.Day, 19, 5, 0);
-                DateTime tomorrow = new DateTime(now.Year, now.Month, now.Day + 1, 0, 0, 0);
+                DateTime tomorrow;
+                try
+                {
+                    tomorrow = new DateTime(now.Year, now.Month, now.Day + 1, 0, 0, 0);
+                }
+                catch
+                {
+                    try
+                    {
+                        tomorrow = new DateTime(now.Year, now.Month + 1, 1, 0, 0, 0);
+                    }
+                    catch
+                    {
+                        tomorrow = new DateTime(now.Year + 1, 1, 1, 0, 0, 0);
+                    }
+
+                }
 
                 int hour = now.Hour;
                 int min = now.Minute;
